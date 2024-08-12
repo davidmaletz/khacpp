@@ -627,30 +627,21 @@ int __int__(double x)
       return (int)x;
 }
 
-
-static inline bool is_hex_string(const char *c, int len)
-{
-   return (len > 2 && c[0] == '0' && (c[1] == 'x' || c[1] == 'X'))
-      || (len > 3 && (c[0] == '-' || c[0] == '+') && c[1] == '0' && (c[2] == 'x' || c[2] == 'X'));
-}
-
 Dynamic __hxcpp_parse_int(const String &inString)
 {
    if (!inString.raw_ptr())
       return null();
+   long result;
    hx::strbuf buf;
    const char *str = inString.utf8_str(&buf);
-
-   // On the first non space char check to see if we've got a hex string
-   while (isspace(*str)) ++str;
-   bool isHex = is_hex_string(str, strlen(str));
+   bool hex =  (str[0]=='0' && (str[1]=='x' || str[1]=='X'));
    char *end = 0;
-   long result = strtol(str,&end,isHex ? 16 : 10);
-   #ifdef HX_WINDOWS
-   if (str==end && !isHex)
-   #else
+
+   if (hex)
+      result = (long)strtoul(str+2,&end,16);
+   else
+      result = strtol(str,&end,10);
    if (str==end)
-   #endif
       return null();
    return (int)result;
 }
